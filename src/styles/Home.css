@@ -1,0 +1,43 @@
+.home-background {
+    background-image: url('../../public/images/background.jpg');
+    background-size: cover; /* Bild vollständig abdecken */
+    background-position: 30% center; /* Bild leicht nach links verschieben (40% der Breite) */
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #00b4ff;
+    text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.7); /* Lesbarkeit des Textes verbessern */
+  }
+
+  
+  /* Anpassung für mobile Geräte */
+  @media (max-width: 768px) {
+    .home-background {
+      background-size: 520% ; /* Das Bild soll den gesamten Bildschirm abdecken */
+      background-position: 60% center; /* Auf mobilen Geräten stärker nach links verschieben */
+      background-repeat: no-repeat;
+    }
+
+    .with-blur-backdrop {
+
+        background-color: rgba(255, 255, 255, 0.4);
+      
+        -webkit-backdrop-filter: blur(5px);
+      
+        backdrop-filter: blur(5px);
+      
+        height: inherit;
+
+        padding: 20px 30px;
+      
+      }
+
+    h1 {
+      font-size: 1.6rem; /* Textgröße für mobile Geräte anpassen */
+      font-family: 'Source Sans Pro', sans-serif;
+      font-weight: bold;
+    }
+  }
+  
