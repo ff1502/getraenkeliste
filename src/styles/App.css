@@ -7,6 +7,37 @@
   pointer-events: none;
 }
 
+/* Überschriften- und Textgestaltung */
+h1, h2, h3 , p{
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: bold;
+  color: #00b4ff; /* Hellblauer Text für Überschriften */
+}
+
+button {
+  background-color: #00b4ff; /* Hellblauer Hintergrund für Buttons */
+  color: white; /* Weißer Text auf den Buttons */
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: bold;
+  border: 2px solid black; /* Schwarze Umrandung für Buttons */
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: white; /* Weißer Hintergrund beim Hover-Effekt */
+  color: #00b4ff; /* Hellblauer Text beim Hover-Effekt */
+  border-color: #00b4ff; /* Hellblaue Umrandung beim Hover-Effekt */
+}
+
+.container {
+  background-color: white; /* Weißer Hintergrund für den Hauptcontainer */
+  color: black; /* Schwarzer Text im Container */
+  padding: 20px;
+  border-radius: 8px; /* Leicht abgerundete Ecken für
+  }
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
@@ -39,7 +70,7 @@
 
 /* src/styles/App.css */
 body {
-  background-color: #f0f0f0; /* Heller Hintergrund für bessere Lesbarkeit */
+  background-color: rgb(43, 43, 43); /* Heller Hintergrund für bessere Lesbarkeit */
   color: #333; /* Dunkle Schriftfarbe */
 }
 
@@ -84,3 +115,4 @@ h2 {
   }
 }
 
+}

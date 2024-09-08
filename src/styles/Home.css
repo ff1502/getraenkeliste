@@ -7,11 +7,41 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #00b4ff;
-    text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.7); /* Lesbarkeit des Textes verbessern */
+    background-color: rgb(43, 43, 43); /* Hintergrundfarbe hinter dem Bild */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Lesbarkeit des Textes verbessern */
   }
 
+  /* Überschriften- und Textgestaltung */
+  h1, h2, h3 , p{
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: bold;
+    color: #00b4ff; /* Hellblauer Text für Überschriften */
+  }
   
+  button {
+    background-color: #00b4ff; /* Hellblauer Hintergrund für Buttons */
+    color: white; /* Weißer Text auf den Buttons */
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: bold;
+    border: 2px solid black; /* Schwarze Umrandung für Buttons */
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: white; /* Weißer Hintergrund beim Hover-Effekt */
+    color: #00b4ff; /* Hellblauer Text beim Hover-Effekt */
+    border-color: #00b4ff; /* Hellblaue Umrandung beim Hover-Effekt */
+  }
+  
+/*   .container {
+    background-color: white;  Weißer Hintergrund für den Hauptcontainer 
+    color: black;  Schwarzer Text im Container 
+    padding: 20px;
+    border-radius: 8px;  Leicht abgerundete Ecken für
+    }
+   */
   /* Anpassung für mobile Geräte */
   @media (max-width: 768px) {
     .home-background {
@@ -30,14 +60,13 @@
       
         height: inherit;
 
-        padding: 20px 30px;
+        padding: 60px 60px;
       
       }
 
     h1 {
-      font-size: 1.6rem; /* Textgröße für mobile Geräte anpassen */
+      font-size: 1.4rem; /* Textgröße für mobile Geräte anpassen */
       font-family: 'Source Sans Pro', sans-serif;
       font-weight: bold;
     }
   }
-  
