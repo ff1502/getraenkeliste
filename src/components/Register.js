@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth'; // Firebase Auth-Funktion
-import { auth, db } from '../firebase'; // Firebase-Konfiguration importieren
-import { doc, setDoc } from 'firebase/firestore'; // Firestore zum Speichern der Benutzerdaten
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -38,7 +38,8 @@ function Register() {
         bier: 0,
         wasser: 0,
         fassbier: 0,
-        wegbier: 0
+        wegbier: 0,
+        isAdmin: false // Adminstatus standardmäßig auf false setzen
       });
 
       alert('Registrierung erfolgreich!');

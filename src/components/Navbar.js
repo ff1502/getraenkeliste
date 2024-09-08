@@ -1,18 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase'; // Firestore importieren
+import { doc, getDoc } from 'firebase/firestore'; // Firestore-Daten abrufen
 
-function Navbar() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Zustand für die Authentifizierung
+function NavBar() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Admin-Status
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setIsAuthenticated(true); // Benutzer ist eingeloggt
+        setIsAuthenticated(true);
+        // Überprüfe, ob der Benutzer Admin ist
+        const docRef = doc(db, 'drinkCounts', user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().isAdmin) {
+          setIsAdmin(true); // Benutzer ist Admin
+        } else {
+          setIsAdmin(false); // Benutzer ist kein Admin
+        }
       } else {
-        setIsAuthenticated(false); // Benutzer ist ausgeloggt
+        setIsAuthenticated(false);
+        setIsAdmin(false);
       }
     });
 
@@ -58,7 +70,21 @@ function Navbar() {
                 Getränkeliste
               </Link>
             </li>
-            {!isAuthenticated && ( // Nur anzeigen, wenn der Benutzer nicht eingeloggt ist
+            {isAuthenticated && isAdmin && ( // Admin-Reiter nur anzeigen, wenn der Benutzer Admin ist
+              <li className="nav-item">
+                <Link className="nav-link" to="/admin">
+                  Admin
+                </Link>
+              </li>
+            )}
+            {isAuthenticated && (
+              <li className="nav-item">
+                <button className="btn btn-danger" onClick={handleLogout}>
+                  Ausloggen
+                </button>
+              </li>
+            )}
+            {!isAuthenticated && (
               <>
                 <li className="nav-item">
                   <Link className="nav-link" to="/login">
@@ -72,13 +98,6 @@ function Navbar() {
                 </li>
               </>
             )}
-            {isAuthenticated && ( // Nur anzeigen, wenn der Benutzer eingeloggt ist
-              <li className="nav-item">
-                <button className="btn btn-danger" onClick={handleLogout}>
-                  Ausloggen
-                </button>
-              </li>
-            )}
           </ul>
         </div>
       </div>
@@ -86,4 +105,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default NavBar;
