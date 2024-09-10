@@ -1,10 +1,16 @@
-.dark-mode-switch {
-    position: fixed;
-    top: 10px;
-    right: 10px; /* Positioniert den Switch am rechten Rand */
-    z-index: 1000; /* Stellt sicher, dass es vor anderen Elementen bleibt */
-  }
 .password-forget {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: bold;
 }  
+/* CSS für Dark Mode Switch - Immer rechts ausrichten */
+.dark-mode-switch {
+    margin-left: auto; /* Lässt den Schalter nach rechts rücken */
+  }
+  
+  @media (max-width: 768px) {
+    .dark-mode-switch {
+      margin-left: auto; /* Sicherstellen, dass der Schalter auf mobilen Geräten ebenfalls rechts bleibt */
+      display: flex;
+      justify-content: flex-end;
+    }
+  }

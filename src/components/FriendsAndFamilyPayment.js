@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { doc, getDoc, updateDoc, setDoc, getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Firebase Firestore
 import { auth } from '../firebase'; // Firebase-Authentifizierung
 import { useNavigate } from 'react-router-dom';
+import { logUserAction } from '../helpers/logging'; // Importiere die Log-Funktion
 
 function FriendsAndFamilyPayment() {
   const [amount, setAmount] = useState('');
@@ -58,26 +59,26 @@ function FriendsAndFamilyPayment() {
   };
 
   const updateBalanceInFirebase = async (amount) => {
-    const user = auth.currentUser;  // Prüfe, ob der Benutzer eingeloggt ist
-
+    const user = auth.currentUser; // Prüfe, ob der Benutzer eingeloggt ist
+  
     if (user) {
-      const userRef = doc(db, 'drinkCounts', user.uid);  // Referenz auf die drinkCounts-Sammlung
-
+      const userRef = doc(db, 'drinkCounts', user.uid); // Referenz auf die drinkCounts-Sammlung
+  
       try {
         console.log('Benutzer-ID:', user.uid); // Log zur Überprüfung
-
+  
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
           const currentBalance = userDoc.data().balance || 0; // Aktuelles Guthaben
-          const newBalance = currentBalance + amount; // Guthaben hinzufügen
-
+          const newBalance = currentBalance + amount; // Neues Guthaben berechnen
+  
           // Aktualisiere das Guthaben in Firestore
           await updateDoc(userRef, { balance: newBalance });
           console.log(`Guthaben von ${user.email} wurde um ${amount}€ erhöht. Neues Guthaben: ${newBalance}€.`);
-
+  
           const firstName = userDoc.data().firstName || 'Unbekannt';
           const lastName = userDoc.data().lastName || 'Unbekannt';
-
+  
           // Transaktionslog erstellen
           await addDoc(collection(db, 'transactions'), {
             uid: user.uid,
@@ -87,11 +88,16 @@ function FriendsAndFamilyPayment() {
             timestamp: serverTimestamp(),
           });
           console.log('Transaktionslog wurde hinzugefügt.');
+  
+          // Protokolliere die Guthaben-Aufladung im Audit Log
+          await logUserAction(user.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€`);
+          console.log('Audit-Log für Guthaben-Aufladung hinzugefügt.');
+  
         } else {
           console.error('Benutzer-Dokument existiert nicht.');
         }
       } catch (error) {
-        console.error('Fehler beim Abrufen oder Aktualisieren des Guthabens:', error); // Log für den Fehler
+        console.error('Fehler beim Abrufen oder Aktualisieren des Guthabens:', error); // Fehlerprotokoll
       }
     } else {
       console.error('Kein Benutzer eingeloggt.');

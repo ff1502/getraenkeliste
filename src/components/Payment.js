@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { updateBalance } from '../utils/balanceUtils';
+import { auth, db } from '../firebase';
+import { logUserAction } from '../helpers/logging';
+import '../styles/Payment.css';
 
 function Payment() {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [showBankTransfer, setShowBankTransfer] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const user = auth.currentUser;
+  const navigate = useNavigate();
 
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
@@ -21,7 +28,7 @@ function Payment() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!amount || isNaN(amount) || amount <= 0) {
@@ -33,13 +40,23 @@ function Payment() {
       // PayPal-Zahlungslogik hier hinzufügen
       alert(`Sie werden zu PayPal weitergeleitet, um ${amount}€ zu bezahlen.`);
       setPaymentConfirmed(true);
+
+      // Guthaben aktualisieren und Log erstellen
+      await updateBalance(user.uid, parseFloat(amount));
+      await logUserAction(user.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€ (PayPal)`);
     } else if (paymentMethod === 'banktransfer') {
       // Banküberweisung-Zahlungslogik
       alert(`Bitte überweisen Sie ${amount}€ gemäß der Banküberweisungsanleitung.`);
       setPaymentConfirmed(true);
+
+      // Guthaben-Log für Banküberweisung erstellen
+      await logUserAction(user.uid, 'Guthaben per Banküberweisung angefragt', `Betrag: ${amount}€`);
     } else {
       alert('Bitte wählen Sie eine Zahlungsart.');
     }
+
+    // Weiterleitung nach erfolgreicher Zahlung oder Bestätigung
+    navigate('/drinklist');
   };
 
   return (
@@ -78,9 +95,9 @@ function Payment() {
             <p>
               Bitte überweisen Sie den Betrag auf folgendes Konto:
               <br />
-              IBAN: DE12345678901234567890
+              IBAN: DE74 3101 0833 9912 9527 13
               <br />
-              BIC: ABCDEFGH
+              BIC: SCFBDE33XXX
               <br />
               Verwendungszweck: [Ihr Name] Bierkassenkonto
             </p>

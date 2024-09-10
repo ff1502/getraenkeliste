@@ -3,9 +3,10 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Link } from 'react-router-dom';
 import Payment from './Payment';
-import { updateBalance } from '../utils/balanceUtils'; // Importiere die Guthaben-Aktualisierungsfunktion;
-import BankTransfer from './BankTransfer';
+import { updateBalance } from '../utils/balanceUtils'; // Importiere die Guthaben-Aktualisierungsfunktion
 import { useNavigate } from 'react-router-dom';
+import { logUserAction } from '../helpers/logging'; // Importiere die Log-Funktion
+import '../styles/DrinkList.css';
 
 function DrinkList() {
   const [drinkCounts, setDrinkCounts] = useState({
@@ -70,31 +71,40 @@ function DrinkList() {
     fetchUserDetailsAndDrinkCounts();
   }, [user]);
 
-  const handlePaymentSuccess = (details) => {
+  const handlePaymentSuccess = async (details) => {
     const amount = parseFloat(details.purchase_units[0].amount.value);
     updateBalance(user.uid, amount); // Aktualisiere das Guthaben nach erfolgreicher Zahlung
+
+    // Logge die Guthabenaufladung
+    await logUserAction(user.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€`);
   };
 
-  const updateDrinkCount = (type, change) => {
+  const updateDrinkCount = async (type, change) => {
     const price = drinkPrices[type] || 0;
-
+  
     setDrinkCounts((prevCounts) => ({
       ...prevCounts,
       [type]: prevCounts[type] + change,
     }));
-
+  
     setBalance((prevBalance) => prevBalance + price * -change);
+  
+    // Logge die Aktion des Benutzers
+    await logUserAction(user.uid, `Getränk ${change > 0 ? 'hinzugefügt' : 'entfernt'}`, `${type.charAt(0).toUpperCase() + type.slice(1)}: ${change > 0 ? '1' : '-1'}`);
   };
 
-  const handleBankTransfer = (amount) => {
+  const handleBankTransfer = async (amount) => {
     updateBalance(user.uid, amount); // Aktualisiere das Guthaben nach bestätigter Überweisung
+
+    // Logge die Banküberweisung
+    await logUserAction(user.uid, 'Guthaben per Banküberweisung aufgeladen', `Betrag: ${amount}€`);
   };
 
   const saveCounts = async () => {
     if (user) {
       try {
         const docRef = doc(db, 'drinkCounts', user.uid);
-
+  
         await updateDoc(docRef, {
           softdrink: drinkCounts.softdrink,
           bier: drinkCounts.bier,
@@ -103,8 +113,11 @@ function DrinkList() {
           wegbier: drinkCounts.wegbier,
           balance: balance,
         });
-
+  
         alert('Änderungen wurden gespeichert!');
+  
+        // Logge das Speichern der Änderungen
+        await logUserAction(user.uid, 'Änderungen gespeichert', 'Getränkezähler und Guthaben wurden aktualisiert');
       } catch (error) {
         console.error('Fehler beim Speichern:', error);
         alert('Fehler beim Speichern der Daten.');
@@ -183,5 +196,3 @@ function DrinkList() {
 }
 
 export default DrinkList;
-
-

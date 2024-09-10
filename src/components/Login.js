@@ -1,45 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { auth } from '../firebase'; // Firebase-Authentifizierung
-import '../styles/styles.css';
+import { auth } from '../firebase';
+import { useNavigate } from 'react-router-dom';
 
 function Login({ setIsLoggedIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Überprüfen, ob der Benutzer bereits eingeloggt ist (nach Seiten-Reload)
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        setIsLoggedIn(true); // Benutzer ist bereits eingeloggt
-        navigate('/drinklist'); // Zur Getränkeliste weiterleiten
-      }
-    });
-  }, [setIsLoggedIn, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Setze die Authentifizierungssitzung auf die lokale Persistenz (auch nach Refresh)
+      // Setze die Sitzungspersistenz auf lokale Persistenz (bleibt erhalten nach Aktualisierung)
       await setPersistence(auth, browserLocalPersistence);
-      await signInWithEmailAndPassword(auth, email, password);
 
-      setIsLoggedIn(true); // Setze den Login-Zustand
-      navigate('/drinklist'); // Nach erfolgreichem Login weiterleiten
+      // Benutzer anmelden
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setIsLoggedIn(true); // Benutzer ist eingeloggt
+
+      // Navigiere zur Getränkeliste
+      navigate('/drinklist');
+
+      // Optional: Automatisches Ausloggen nach 15 Minuten
+      // setTimeout(() => {
+      //   auth.signOut();
+      //   setIsLoggedIn(false);
+      //   navigate('/login');
+      // }, 15 * 60 * 1000); // 15 Minuten in Millisekunden
+
     } catch (error) {
-      setErrorMessage('Ungültige Anmeldedaten, bitte versuchen Sie es erneut.');
+      setError('Fehler beim Einloggen: ' + error.message);
     }
   };
 
   return (
     <div className="container mt-4">
       <h2>Login</h2>
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email</label>
@@ -61,14 +60,8 @@ function Login({ setIsLoggedIn }) {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">
-          Einloggen
-        </button>
-
+        <button type="submit" className="btn btn-primary mt-3">Einloggen</button>
       </form>
-
-      <Link  className={"password-forget"} to="/password-reset">Passwort vergessen?</Link>
-
     </div>
   );
 }

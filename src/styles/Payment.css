@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+    .form-control {
+      width: 100%; /* Volle Breite für Eingabefelder */
+    }
+  
+    .btn {
+      width: 100%; /* Breite der Buttons auf mobile Geräten anpassen */
+    }
+  }
+  

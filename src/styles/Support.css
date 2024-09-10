@@ -1,0 +1,6 @@
+@media (max-width: 768px) {
+    .form-control {
+      width: 100%; /* Volle Breite auf mobilen Geräten */
+    }
+  }
+  
