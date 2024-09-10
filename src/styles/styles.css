@@ -1,0 +1,10 @@
+.dark-mode-switch {
+    position: fixed;
+    top: 10px;
+    right: 10px; /* Positioniert den Switch am rechten Rand */
+    z-index: 1000; /* Stellt sicher, dass es vor anderen Elementen bleibt */
+  }
+.password-forget {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: bold;
+}  

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { Link } from 'react-router-dom';
+import Payment from './Payment';
+import { updateBalance } from '../utils/balanceUtils'; // Importiere die Guthaben-Aktualisierungsfunktion;
+import BankTransfer from './BankTransfer';
+import { useNavigate } from 'react-router-dom';
 
 function DrinkList() {
   const [drinkCounts, setDrinkCounts] = useState({
@@ -16,7 +21,6 @@ function DrinkList() {
   const [sortedDrinks, setSortedDrinks] = useState([]); // Sortierte Getränke
   const [userDetails, setUserDetails] = useState({ firstName: '', lastName: '' });
   const [loading, setLoading] = useState(true);
-
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -66,6 +70,11 @@ function DrinkList() {
     fetchUserDetailsAndDrinkCounts();
   }, [user]);
 
+  const handlePaymentSuccess = (details) => {
+    const amount = parseFloat(details.purchase_units[0].amount.value);
+    updateBalance(user.uid, amount); // Aktualisiere das Guthaben nach erfolgreicher Zahlung
+  };
+
   const updateDrinkCount = (type, change) => {
     const price = drinkPrices[type] || 0;
 
@@ -75,6 +84,10 @@ function DrinkList() {
     }));
 
     setBalance((prevBalance) => prevBalance + price * -change);
+  };
+
+  const handleBankTransfer = (amount) => {
+    updateBalance(user.uid, amount); // Aktualisiere das Guthaben nach bestätigter Überweisung
   };
 
   const saveCounts = async () => {
@@ -145,7 +158,11 @@ function DrinkList() {
           Speichern
         </button>
       </div>
-
+      <div className="mt-4">
+        <Link to="/payment" className="btn btn-primary">
+          Guthaben aufladen
+        </Link>
+      </div>
       {/* Sortierte Preisliste */}
       <div className="mt-4">
         <h4>Preisliste</h4>
@@ -166,3 +183,5 @@ function DrinkList() {
 }
 
 export default DrinkList;
+
+
