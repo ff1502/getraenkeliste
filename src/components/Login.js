@@ -1,47 +1,43 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { Link } from 'react-router-dom'; // Verwende Link für die Navigation
 import { auth } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
-function Login({ setIsLoggedIn }) {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      // Setze die Sitzungspersistenz auf lokale Persistenz (bleibt erhalten nach Aktualisierung)
-      await setPersistence(auth, browserLocalPersistence);
-
-      // Benutzer anmelden
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setIsLoggedIn(true); // Benutzer ist eingeloggt
-
-      // Navigiere zur Getränkeliste
-      navigate('/drinklist');
-
-      // Optional: Automatisches Ausloggen nach 15 Minuten
-      // setTimeout(() => {
-      //   auth.signOut();
-      //   setIsLoggedIn(false);
-      //   navigate('/login');
-      // }, 15 * 60 * 1000); // 15 Minuten in Millisekunden
-
+      await auth.signInWithEmailAndPassword(email, password);
+      // Handle successful login
     } catch (error) {
-      setError('Fehler beim Einloggen: ' + error.message);
+      setError(error.message);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      alert('Bitte gib deine E-Mail-Adresse ein, um dein Passwort zurückzusetzen.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert('Passwort-Reset-E-Mail wurde gesendet!');
+    } catch (error) {
+      alert('Fehler beim Senden der Passwort-Reset-E-Mail.');
+      console.error('Fehler:', error);
     }
   };
 
   return (
     <div className="container mt-4">
       <h2>Login</h2>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <div className="form-group">
-          <label>Email</label>
+          <label>E-Mail-Adresse:</label>
           <input
             type="email"
             className="form-control"
@@ -51,7 +47,7 @@ function Login({ setIsLoggedIn }) {
           />
         </div>
         <div className="form-group">
-          <label>Passwort</label>
+          <label>Passwort:</label>
           <input
             type="password"
             className="form-control"
@@ -60,8 +56,14 @@ function Login({ setIsLoggedIn }) {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">Einloggen</button>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <button type="submit" className="btn btn-primary">Login</button>
       </form>
+
+      {/* Passwort-vergessen-Link */}
+      <div className="mt-3">
+        <Link to="#" onClick={handlePasswordReset}>Passwort vergessen?</Link>
+      </div>
     </div>
   );
 }
