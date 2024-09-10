@@ -7,8 +7,9 @@ import { updateBalance } from '../utils/balanceUtils'; // Importiere die Guthabe
 import { useNavigate } from 'react-router-dom';
 import { logUserAction } from '../helpers/logging'; // Importiere die Log-Funktion
 import '../styles/DrinkList.css';
+import '../styles/Darkmode.css';
 
-function DrinkList() {
+function DrinkList({isDarkMode}) {
   const [drinkCounts, setDrinkCounts] = useState({
     softdrink: 0,
     bier: 0,
@@ -130,7 +131,7 @@ function DrinkList() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className={`container mt-4 ${isDarkMode ? 'dark-mode' : ''}`}>
       {/* Überschrift mit Benutzername */}
       <h2 className="text-center">
         Deine Getränkeliste, {userDetails.firstName} {userDetails.lastName}

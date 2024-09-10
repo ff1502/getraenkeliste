@@ -1,0 +1,22 @@
+/* Darkmode für Tabellen und Listen */
+.dark-mode .list-group-item {
+    background-color: #333;
+    color: #fff;
+  }
+  
+  .dark-mode .btn {
+    background-color: #555;
+    color: #fff;
+  }
+  
+  .dark-mode .table {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+  }
+  
+  .dark-mode .table th,
+  .dark-mode .table td {
+    border-color: #555;
+  }
+  
