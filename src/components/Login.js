@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // Verwende Link für die Navigation
 import { auth } from '../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // Importiere die richtige Methode
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const auth = getAuth(); // Hole die Authentifizierung-Instanz
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      // Handle successful login
+      await signInWithEmailAndPassword(auth, email, password);
+      // Erfolgreiches Login, weiterleiten
+      navigate('/drinklist'); // Leitet zur Getränkeliste weiter
     } catch (error) {
       setError(error.message);
     }

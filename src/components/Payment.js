@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateBalance } from '../utils/balanceUtils';
-import { auth, db } from '../firebase';
-import { logUserAction } from '../helpers/logging';
-import '../styles/Payment.css';
+import { updateBalance } from '../utils/balanceUtils'; // Guthaben-Update Funktion
+import { auth } from '../firebase';
+import { logUserAction } from '../helpers/logging'; // Log-Funktion
 
 function Payment() {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [showBankTransfer, setShowBankTransfer] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const user = auth.currentUser;
   const navigate = useNavigate();
@@ -18,44 +16,38 @@ function Payment() {
   };
 
   const handlePaymentMethodChange = (e) => {
-    const method = e.target.value;
-    setPaymentMethod(method);
-
-    if (method === 'banktransfer') {
-      setShowBankTransfer(true); // Banküberweisung-Anleitung anzeigen
-    } else {
-      setShowBankTransfer(false); // Banküberweisung-Anleitung verbergen
-    }
+    setPaymentMethod(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!amount || isNaN(amount) || amount <= 0) {
-      alert('Bitte geben Sie einen gültigen Betrag ein.');
+      alert('Bitte gib einen gültigen Betrag ein.');
       return;
     }
 
     if (paymentMethod === 'paypal') {
-      // PayPal-Zahlungslogik hier hinzufügen
+      // Weiterleitung zu PayPal.me für die Zahlung
       alert(`Sie werden zu PayPal weitergeleitet, um ${amount}€ zu bezahlen.`);
+      window.location.href = `https://www.paypal.me/PrutheniaBierkasse/${amount}`;
       setPaymentConfirmed(true);
 
-      // Guthaben aktualisieren und Log erstellen
+      // Guthaben aktualisieren nach der Zahlung
       await updateBalance(user.uid, parseFloat(amount));
       await logUserAction(user.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€ (PayPal)`);
+      
     } else if (paymentMethod === 'banktransfer') {
-      // Banküberweisung-Zahlungslogik
-      alert(`Bitte überweisen Sie ${amount}€ gemäß der Banküberweisungsanleitung.`);
+      alert(`Bitte überweise ${amount}€ gemäß den Banküberweisungsanweisungen.`);
       setPaymentConfirmed(true);
 
-      // Guthaben-Log für Banküberweisung erstellen
+      // Banküberweisung loggen
       await logUserAction(user.uid, 'Guthaben per Banküberweisung angefragt', `Betrag: ${amount}€`);
     } else {
-      alert('Bitte wählen Sie eine Zahlungsart.');
+      alert('Bitte wähle eine Zahlungsart.');
     }
 
-    // Weiterleitung nach erfolgreicher Zahlung oder Bestätigung
+    // Nach Bestätigung zur Getränkeliste weiterleiten
     navigate('/drinklist');
   };
 
@@ -87,22 +79,6 @@ function Payment() {
             <option value="banktransfer">Banküberweisung</option>
           </select>
         </div>
-
-        {/* Zeigt Banküberweisungsdetails an, wenn Banküberweisung ausgewählt ist */}
-        {showBankTransfer && (
-          <div className="alert alert-info mt-3">
-            <h4>Anleitung für Banküberweisung</h4>
-            <p>
-              Bitte überweisen Sie den Betrag auf folgendes Konto:
-              <br />
-              IBAN: DE74 3101 0833 9912 9527 13
-              <br />
-              BIC: SCFBDE33XXX
-              <br />
-              Verwendungszweck: [Ihr Name] Bierkassenkonto
-            </p>
-          </div>
-        )}
 
         {paymentConfirmed && (
           <div className="alert alert-success mt-3">
