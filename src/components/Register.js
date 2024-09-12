@@ -33,6 +33,7 @@ function Register() {
         bier: 0,
         fassbier: 0,
         isAdmin: false,
+        isSecondFloor: false,
         softdrink: 0,
         uid: user.uid,
         wasser: 0,

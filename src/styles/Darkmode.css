@@ -15,8 +15,45 @@
     border-color: #555;
   }
   
+  /* Tabellenzellen und Kopfzeilen im Darkmode */
   .dark-mode .table th,
   .dark-mode .table td {
     border-color: #555;
+    color: white; /* Schriftfarbe weiß */
+  }
+  
+  /* Lightmode für Tabellen und Listen */
+  .light-mode .list-group-item {
+    background-color: #fff;
+    color: #000;
+  }
+  
+  .light-mode .btn {
+    background-color: #e0e0e0;
+    color: #000;
+  }
+  
+  .light-mode .table {
+    background-color: #fff;
+    color: #000;
+    border-color: #ddd;
+  }
+  
+  /* Tabellenzellen und Kopfzeilen im Lightmode */
+  .light-mode .table th,
+  .light-mode .table td {
+    border-color: #ddd;
+    color: black; /* Schriftfarbe schwarz */
+  }
+  
+  /* Beispiel für das Styling der Tabellenzeilen */
+  .table-light-mode th, 
+  .table-light-mode td {
+    color: black;
+  }
+  
+  .table-dark-mode th, 
+  .table-dark-mode td {
+    color: white;
   }
   

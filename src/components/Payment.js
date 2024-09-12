@@ -8,7 +8,6 @@ function Payment() {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const user = auth.currentUser;
   const navigate = useNavigate();
 
   const handleAmountChange = (e) => {
@@ -33,21 +32,20 @@ function Payment() {
       window.location.href = `https://www.paypal.me/PrutheniaBierkasse/${amount}`;
       setPaymentConfirmed(true);
 
-      // Guthaben aktualisieren nach der Zahlung
-      await updateBalance(user.uid, parseFloat(amount));
-      await logUserAction(user.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€ (PayPal)`);
+      // Keine Guthaben-Aktualisierung in Firebase mehr
+      await logUserAction(auth.currentUser.uid, 'Guthaben aufgeladen', `Betrag: ${amount}€ (PayPal)`);
       
     } else if (paymentMethod === 'banktransfer') {
       alert(`Bitte überweise ${amount}€ gemäß den Banküberweisungsanweisungen.`);
       setPaymentConfirmed(true);
 
-      // Banküberweisung loggen
-      await logUserAction(user.uid, 'Guthaben per Banküberweisung angefragt', `Betrag: ${amount}€`);
+      // Nur Logging ohne Firebase-Guthaben-Aktualisierung
+      await logUserAction(auth.currentUser.uid, 'Guthaben per Banküberweisung angefragt', `Betrag: ${amount}€`);
     } else {
       alert('Bitte wähle eine Zahlungsart.');
     }
 
-    // Nach Bestätigung zur Getränkeliste weiterleiten
+    // Weiterleitung nach Bestätigung
     navigate('/drinklist');
   };
 

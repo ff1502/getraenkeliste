@@ -6,6 +6,7 @@ function Home() {
     <div className="home-background">
         <div className="with-blur-backdrop">
             <h1>Willkommen zur Getränke-App!</h1>
+            <h3>Bei Verbesserungsvorschlägen gerne über den Support eine E-Mail da lassen</h3>
         </div>
     </div>
   );

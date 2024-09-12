@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import prutheniaLogo from '../images/pruthenia.jpeg'; // Stelle sicher, dass der Pfad korrekt ist
+import prutheniaLogo from '../images/pruthenia.jpeg';
 import { doc, getDoc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
-import { Dropdown, DropdownButton } from 'react-bootstrap'; // Bootstrap-Komponenten für Dropdown
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import 'bootstrap/js/dist/collapse'; // Bootstrap's Collapse
 
 function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const { t, i18n } = useTranslation();
-
-  const changeLanguage = (lang) => {
-    i18n.changeLanguage(lang); // Ändere die Sprache
-  };
-
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
     return savedMode ? JSON.parse(savedMode) : false;
   });
-  const [isAdmin, setIsAdmin] = useState(false); // Admin-Status
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSecondFloor, setIsSecondFloor] = useState(false);
   const navigate = useNavigate();
+  const navbarCollapseRef = useRef(null); // Ref for the collapsible navbar
 
   useEffect(() => {
     if (darkMode) {
@@ -31,19 +29,20 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   }, [darkMode]);
 
   useEffect(() => {
-    const fetchAdminStatus = async () => {
+    const fetchUserRoles = async () => {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, 'drinkCounts', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setIsAdmin(data.isAdmin || false); // Admin-Status aus Firestore laden
+          setIsAdmin(data.isAdmin || false);
+          setIsSecondFloor(data.isSecondFloor || false);
         }
       }
     };
     if (isLoggedIn) {
-      fetchAdminStatus();
+      fetchUserRoles();
     }
   }, [isLoggedIn]);
 
@@ -54,89 +53,131 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      setIsLoggedIn(false); // Setze den Zustand zurück, wenn der Benutzer ausgeloggt ist
-      navigate('/login'); // Leite zur Login-Seite weiter
+      setIsLoggedIn(false);
+      navigate('/login');
     } catch (error) {
       console.error('Fehler beim Ausloggen:', error);
     }
   };
 
+  // Function to close the navbar on link click
+  const handleLinkClick = () => {
+    const collapseElement = navbarCollapseRef.current;
+    if (collapseElement && collapseElement.classList.contains('show')) {
+      collapseElement.classList.remove('show');
+    }
+  };
+
   return (
     <nav className={`navbar navbar-expand-lg ${darkMode ? 'navbar-dark bg-dark' : 'navbar-light bg-light'}`}>
-      {/* Home Button mit Bild */}
       <div className="container-fluid">
-      <Link className="navbar-brand" to="/">
-        <img src={prutheniaLogo} alt="Home" style={{ height: '40px', width: '40px' }} />
-      </Link>
-      <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span className="navbar-toggler-icon"></span>
-      </button>
-      <div className="collapse navbar-collapse" id="navbarNav">
-        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-          {isLoggedIn && (
-            <>
-              <li className="nav-item">
-                <Link className="nav-link" to="/drinklist">{t('drink_list')}</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/payment">{t('balance')}</Link>
-              </li>
-              {isAdmin && (
+        <Link className="navbar-brand" to="/">
+          <img src={prutheniaLogo} alt="Home" style={{ height: '40px', width: '40px' }} />
+        </Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav" ref={navbarCollapseRef}>
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            {isLoggedIn && (
+              <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/statistics">{t('statistics')}</Link>
+                  <Link className="nav-link" to="/drinklist" onClick={handleLinkClick}>
+                    {t('drink_list')}
+                  </Link>
                 </li>
-              )}
-              {isAdmin && (
                 <li className="nav-item">
-                  <Link className="nav-link" to="/admin">Admin</Link>
+                  <Link className="nav-link" to="/payment" onClick={handleLinkClick}>
+                    {t('balance')}
+                  </Link>
                 </li>
-              )}
-              <li className="nav-item">
-                <Link className="nav-link" to="/support">Support</Link>
-              </li>
-            </>
-          )}
-        </ul>
-        
-        <div className="ml-auto d-flex">
-          {!isLoggedIn ? (
-            <>
-              <Link className="btn btn-outline-primary mr-2" to="/login">{t('login')}</Link>
-              <Link className="btn btn-outline-success" to="/register">{t('register')}</Link>
-              <Link className="nav-link" to="/support">Support</Link>
-            </>
-          ) : (
-            <button className="btn btn-danger ml-auto" onClick={handleLogout}>{t('logout')}</button>
-          )}
+                {isAdmin && (
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/statistics" onClick={handleLinkClick}>
+                      {t('statistics')}
+                    </Link>
+                  </li>
+                )}
+                {isAdmin && (
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/admin" onClick={handleLinkClick}>
+                      Admin
+                    </Link>
+                  </li>
+                )}
+                {isSecondFloor && (
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/second-floor" onClick={handleLinkClick}>
+                      Zweite Etage
+                    </Link>
+                  </li>
+                )}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/support" onClick={handleLinkClick}>
+                    Support
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
 
-          {/* Sprachumschaltung Dropdown */}
-          <DropdownButton
-            id="dropdown-language-button"
-            title={i18n.language.toUpperCase()} // Zeige die aktuelle Sprache (EN oder DE)
-            className="ml-3"
-            align="end" // Dropdown nach rechts ausrichten
-            variant="light" // Setze die Schriftfarbe auf Schwarz
-            style={{ color: 'black', backgroundColor: 'transparent', border: 'none' }} // Schwarze Schrift, transparentes Dropdown
-          >
-            <Dropdown.Item onClick={() => changeLanguage('en')} style={{ color: 'black' }}>EN</Dropdown.Item>
-            <Dropdown.Item onClick={() => changeLanguage('de')} style={{ color: 'black' }}>DE</Dropdown.Item>
-          </DropdownButton>
+          <div className="ml-auto d-flex">
+            {!isLoggedIn ? (
+              <>
+                <Link className="btn btn-outline-primary mr-2" to="/login" onClick={handleLinkClick}>
+                  {t('login')}
+                </Link>
+                <Link className="btn btn-outline-success" to="/register" onClick={handleLinkClick}>
+                  {t('register')}
+                </Link>
+                <Link className="nav-link" to="/support" onClick={handleLinkClick}>
+                  Support
+                </Link>
+              </>
+            ) : (
+              <button className="btn btn-danger ml-auto" onClick={handleLogout}>
+                {t('logout')}
+              </button>
+            )}
 
-          {/* Darkmode Toggle Switch */}
-          <div className="form-check form-switch ml-3 dark-mode-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="darkModeSwitch"
-              checked={darkMode}
-              onChange={toggleDarkMode}
-            />
-            <label className="form-check-label" htmlFor="darkModeSwitch">
-              {darkMode ? 'Dark Mode' : 'Light Mode'}
-            </label>
+            <DropdownButton
+              id="dropdown-language-button"
+              title={i18n.language.toUpperCase()}
+              className="ml-3"
+              align="end"
+              variant="light"
+              style={{ color: 'black', backgroundColor: 'transparent', border: 'none' }}
+            >
+              <Dropdown.Item onClick={() => i18n.changeLanguage('en')} style={{ color: 'black' }}>
+                EN
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => i18n.changeLanguage('de')} style={{ color: 'black' }}>
+                DE
+              </Dropdown.Item>
+            </DropdownButton>
+
+            <div className="form-check form-switch ml-3 dark-mode-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="darkModeSwitch"
+                checked={darkMode}
+                onChange={toggleDarkMode}
+              />
+              <label className="form-check-label" htmlFor="darkModeSwitch">
+                {darkMode ? 'Dark Mode' : 'Light Mode'}
+              </label>
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </nav>
   );

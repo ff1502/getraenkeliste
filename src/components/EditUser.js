@@ -1,144 +1,143 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 function EditUser() {
-  const { id } = useParams(); // Benutzer-ID aus der URL holen
+  const { userId } = useParams(); // Holen Sie die Benutzer-ID aus der URL
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [drinkCounts, setDrinkCounts] = useState({
     softdrink: 0,
     bier: 0,
     wasser: 0,
     fassbier: 0,
-    wegbier: 0
+    wegbier: 0,
   });
-  const [balance, setBalance] = useState(0); // Guthabenfeld hinzufügen
+  const [balance, setBalance] = useState(0);
   const navigate = useNavigate();
 
+  // Benutzerinformationen und Getränkezähler laden
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserData = async () => {
       try {
-        const docRef = doc(db, 'drinkCounts', id);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUser(data);
+        const userDoc = await getDoc(doc(db, 'drinkCounts', userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUser(userData);
           setDrinkCounts({
-            softdrink: data.softdrink || 0,
-            bier: data.bier || 0,
-            wasser: data.wasser || 0,
-            fassbier: data.fassbier || 0,
-            wegbier: data.wegbier || 0,
+            softdrink: userData.softdrink || 0,
+            bier: userData.bier || 0,
+            wasser: userData.wasser || 0,
+            fassbier: userData.fassbier || 0,
+            wegbier: userData.wegbier || 0,
           });
-          setBalance(data.balance || 0); // Guthaben aus den Daten holen
-          setLoading(false);
+          setBalance(userData.balance || 0);
         } else {
-          console.log('Benutzer nicht gefunden');
-          navigate('/admin');
+          alert('Benutzer nicht gefunden');
         }
       } catch (error) {
         console.error('Fehler beim Abrufen der Benutzerdaten:', error);
       }
     };
 
-    fetchUser();
-  }, [id, navigate]);
+    fetchUserData();
+  }, [userId]);
 
-  const handleUpdate = async () => {
+  // Änderungen speichern
+  const handleSave = async () => {
     try {
-      const docRef = doc(db, 'drinkCounts', id);
-      await updateDoc(docRef, {
-        ...drinkCounts, // Getränkezahlen aktualisieren
-        balance: balance // Guthaben aktualisieren
+      const userDocRef = doc(db, 'drinkCounts', userId);
+      await updateDoc(userDocRef, {
+        softdrink: drinkCounts.softdrink,
+        bier: drinkCounts.bier,
+        wasser: drinkCounts.wasser,
+        fassbier: drinkCounts.fassbier,
+        wegbier: drinkCounts.wegbier,
+        balance: balance,
       });
-      alert('Änderungen erfolgreich gespeichert');
-      navigate('/admin');
+
+      // Log-Eintrag in die Logs-Sammlung hinzufügen
+      await addDoc(collection(db, 'logs'), {
+        action: 'Guthaben und Striche bearbeitet',
+        details: `Neues Guthaben: ${balance}€, Getränke aktualisiert.`,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        timestamp: serverTimestamp(),
+        userId: userId
+      });
+
+      alert('Änderungen erfolgreich gespeichert und geloggt!');
+      navigate('/admin'); // Zurück zur Admin-Seite nach dem Speichern
     } catch (error) {
-      console.error('Fehler beim Speichern der Änderungen:', error);
+      console.error('Fehler beim Speichern der Daten:', error);
+      alert('Fehler beim Speichern der Daten');
     }
   };
 
-  const handleBalanceChange = (amount) => {
-    setBalance((prevBalance) => prevBalance + amount);
-  };
-
-  const handleDrinkCountChange = (key, amount) => {
+  // Eingabewert für Getränkezähler ändern
+  const handleDrinkCountChange = (type, value) => {
+    const parsedValue = parseInt(value, 10);
     setDrinkCounts((prevCounts) => ({
       ...prevCounts,
-      [key]: prevCounts[key] + amount,
+      [type]: isNaN(parsedValue) ? 0 : parsedValue,
     }));
   };
 
-  const handleInputChange = (key, value) => {
-    setDrinkCounts((prevCounts) => ({
-      ...prevCounts,
-      [key]: parseInt(value, 10),
-    }));
+  // Eingabewert für Guthaben ändern
+  const handleBalanceChange = (value) => {
+    const parsedValue = parseFloat(value);
+    setBalance(isNaN(parsedValue) ? 0 : parsedValue);
   };
 
-  if (loading) {
+  if (!user) {
     return <div>Lade Benutzerdaten...</div>;
   }
 
   return (
     <div className="container mt-4">
-      <h2>Bearbeite die Getränkeliste von {user.firstName} {user.lastName}</h2>
-      <ul className="list-group mb-4">
-        {Object.keys(drinkCounts).map((key) => (
-          <li key={key} className="list-group-item d-flex justify-content-between align-items-center">
-            <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-            <div className="d-flex align-items-center">
-              <button
-                className="btn btn-danger me-2"
-                onClick={() => handleDrinkCountChange(key, -1)}
-                disabled={drinkCounts[key] === 0}
-              >
-                -
-              </button>
+      <h2>Bearbeite Getränkeliste für {user.firstName} {user.lastName}</h2>
+      <h3>Guthaben: {balance.toFixed(2)} €</h3>
+
+      <div className="mt-4">
+        <h4>Getränkeliste</h4>
+        <ul className="list-group mb-4">
+          {Object.keys(drinkCounts).map((key) => (
+            <li key={key} className="list-group-item d-flex justify-content-between align-items-center">
+              <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
               <input
                 type="number"
-                value={drinkCounts[key]}
-                onChange={(e) => handleInputChange(key, e.target.value)}
                 className="form-control"
-                style={{ width: '100px' }}
+                value={drinkCounts[key]}
+                onChange={(e) => handleDrinkCountChange(key, e.target.value)}
               />
-              <button
-                className="btn btn-success ms-2"
-                onClick={() => handleDrinkCountChange(key, 1)}
-              >
-                +
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
 
-      {/* Guthaben bearbeiten mit Plus/Minus Knöpfen und Eingabefeld */}
-      <div className="form-group mt-4">
-        <label>Guthaben:</label>
-        <div className="d-flex align-items-center">
-          <button className="btn btn-danger me-2" onClick={() => handleBalanceChange(-1)}>
-            -
-          </button>
+        <h4>Guthaben anpassen</h4>
+        <div className="mb-3">
           <input
             type="number"
-            value={balance}
-            onChange={(e) => setBalance(parseFloat(e.target.value))}
+            step="0.01"
             className="form-control"
-            style={{ width: '150px' }}
+            value={balance}
+            onChange={(e) => handleBalanceChange(e.target.value)}
+            placeholder="Guthaben eingeben"
           />
-          <button className="btn btn-success ms-2" onClick={() => handleBalanceChange(1)}>
-            +
+        </div>
+
+        <div className="d-flex justify-content-between">
+          {/* Zurück-Button */}
+          <button onClick={() => navigate('/admin')} className="btn btn-secondary">
+            Zurück
+          </button>
+
+          {/* Speichern-Button */}
+          <button onClick={handleSave} className="btn btn-primary">
+            Speichern
           </button>
         </div>
       </div>
-
-      <button onClick={handleUpdate} className="btn btn-primary mt-3">
-        Änderungen speichern
-      </button>
     </div>
   );
 }

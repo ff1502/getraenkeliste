@@ -4,9 +4,9 @@ import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKJAcu2t1iyzFFIiQM-G6bk34OtCB2wRE",
-  authDomain: "getraenkeliste.firebaseapp.com",
+  authDomain: "getraenkeliste-app.firebaseapp.com",
   projectId: "getraenkeliste-app",
-  storageBucket: "getraenkeliste.appspot.com",
+  storageBucket: "getraenkeliste-app.appspot.com",
   messagingSenderId: "288625417392",
   appId: "1:288625417392:web:fa07d851ee3dcda991ef75",
   measurementId: "G-N3QT2FB0P5"
