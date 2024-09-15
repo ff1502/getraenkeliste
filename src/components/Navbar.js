@@ -6,7 +6,6 @@ import prutheniaLogo from '../images/pruthenia.jpeg';
 import { doc, getDoc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
-import 'bootstrap/js/dist/collapse'; // Bootstrap's Collapse
 
 function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const { t, i18n } = useTranslation();
