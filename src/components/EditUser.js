@@ -7,13 +7,13 @@ function EditUser() {
   const { userId } = useParams(); // Holen Sie die Benutzer-ID aus der URL
   const [user, setUser] = useState(null);
   const [drinkCounts, setDrinkCounts] = useState({
-    softdrink: 0,
-    bier: 0,
-    wasser: 0,
-    fassbier: 0,
-    wegbier: 0,
+    softdrink: '',
+    bier: '',
+    wasser: '',
+    fassbier: '',
+    wegbier: '',
   });
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState('');
   const navigate = useNavigate();
 
   // Benutzerinformationen und Getränkezähler laden
@@ -25,13 +25,13 @@ function EditUser() {
           const userData = userDoc.data();
           setUser(userData);
           setDrinkCounts({
-            softdrink: userData.softdrink || 0,
-            bier: userData.bier || 0,
-            wasser: userData.wasser || 0,
-            fassbier: userData.fassbier || 0,
-            wegbier: userData.wegbier || 0,
+            softdrink: userData.softdrink || '',
+            bier: userData.bier || '',
+            wasser: userData.wasser || '',
+            fassbier: userData.fassbier || '',
+            wegbier: userData.wegbier || '',
           });
-          setBalance(userData.balance || 0);
+          setBalance((userData.balance || 0).toFixed(2));
         } else {
           alert('Benutzer nicht gefunden');
         }
@@ -48,22 +48,22 @@ function EditUser() {
     try {
       const userDocRef = doc(db, 'drinkCounts', userId);
       await updateDoc(userDocRef, {
-        softdrink: drinkCounts.softdrink,
-        bier: drinkCounts.bier,
-        wasser: drinkCounts.wasser,
-        fassbier: drinkCounts.fassbier,
-        wegbier: drinkCounts.wegbier,
-        balance: balance,
+        softdrink: drinkCounts.softdrink === '' ? 0 : parseInt(drinkCounts.softdrink, 10),
+        bier: drinkCounts.bier === '' ? 0 : parseInt(drinkCounts.bier, 10),
+        wasser: drinkCounts.wasser === '' ? 0 : parseInt(drinkCounts.wasser, 10),
+        fassbier: drinkCounts.fassbier === '' ? 0 : parseInt(drinkCounts.fassbier, 10),
+        wegbier: drinkCounts.wegbier === '' ? 0 : parseInt(drinkCounts.wegbier, 10),
+        balance: balance === '' ? 0 : parseFloat(balance).toFixed(2),
       });
 
       // Log-Eintrag in die Logs-Sammlung hinzufügen
       await addDoc(collection(db, 'logs'), {
         action: 'Guthaben und Striche bearbeitet',
-        details: `Neues Guthaben: ${balance}€, Getränke aktualisiert.`,
+        details: `Neues Guthaben: ${balance === '' ? '0.00' : balance}€, Getränke aktualisiert.`,
         firstName: user.firstName,
         lastName: user.lastName,
         timestamp: serverTimestamp(),
-        userId: userId
+        userId: userId,
       });
 
       alert('Änderungen erfolgreich gespeichert und geloggt!');
@@ -76,17 +76,16 @@ function EditUser() {
 
   // Eingabewert für Getränkezähler ändern
   const handleDrinkCountChange = (type, value) => {
-    const parsedValue = parseInt(value, 10);
     setDrinkCounts((prevCounts) => ({
       ...prevCounts,
-      [type]: isNaN(parsedValue) ? 0 : parsedValue,
+      [type]: value === '' ? '' : value,
     }));
   };
 
-  // Eingabewert für Guthaben ändern
+  // Eingabewert für Guthaben ändern (negative Werte zulassen)
   const handleBalanceChange = (value) => {
     const parsedValue = parseFloat(value);
-    setBalance(isNaN(parsedValue) ? 0 : parsedValue);
+    setBalance(isNaN(parsedValue) ? '' : parsedValue.toFixed(2));
   };
 
   if (!user) {
@@ -96,7 +95,7 @@ function EditUser() {
   return (
     <div className="container mt-4">
       <h2>Bearbeite Getränkeliste für {user.firstName} {user.lastName}</h2>
-      <h3>Guthaben: {balance.toFixed(2)} €</h3>
+      <h3>Guthaben: {balance === '' ? '0.00' : balance} €</h3>
 
       <div className="mt-4">
         <h4>Getränkeliste</h4>
@@ -109,6 +108,7 @@ function EditUser() {
                 className="form-control"
                 value={drinkCounts[key]}
                 onChange={(e) => handleDrinkCountChange(key, e.target.value)}
+                placeholder="0"
               />
             </li>
           ))}
@@ -122,7 +122,7 @@ function EditUser() {
             className="form-control"
             value={balance}
             onChange={(e) => handleBalanceChange(e.target.value)}
-            placeholder="Guthaben eingeben"
+            placeholder="Guthaben eingeben (kann negativ sein)"
           />
         </div>
 

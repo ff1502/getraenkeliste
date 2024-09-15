@@ -1,8 +1,13 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import { MemoryRouter } from 'react-router-dom';
+import App from './App'; // Überprüfe, ob dieser Pfad korrekt ist
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
+test('renders App component without crashing', () => {
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>
+  );
+  const linkElement = screen.getByText(/Startseite/i); // Passe den Text an, der auf der Startseite gerendert wird
   expect(linkElement).toBeInTheDocument();
 });
