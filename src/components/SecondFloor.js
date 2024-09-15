@@ -9,7 +9,7 @@ function SecondFloor() {
   // Darkmode-Status von localStorage abrufen
   const darkMode = JSON.parse(localStorage.getItem('darkMode')) || false;
 
-  const tasks = ['Wischen', 'Küche', 'Aufräumen', 'Treppe', 'Bad']; // 5 Aufgaben
+  const tasks = ['Wischen', 'Küche', 'Treppe', 'Bad']; // 4 Aufgaben
 
   // Bewohner und Aufgaben laden
   useEffect(() => {
@@ -69,6 +69,11 @@ function SecondFloor() {
           ))}
         </tbody>
       </table>
+      <p>-Treppendienst beeinhaltet Staubsaugen,Wischen und Altglas wegbringen wenn über die hälfte des Mülleimers voll ist. <br></br>
+        -Küchendienst beinhaltet alle oberflächen reinigen,Ofen und Mikrowelle reinigen<br></br>
+        -Badezimmer beinhaltet Dusche,Waschbecken und Klo reinigen und Bodenwischen<br></br>
+        -Wischen der gesamten Etage vorher Straubsaugen<br></br>
+      </p>
     </div>
   );
 }

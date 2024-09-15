@@ -50,9 +50,13 @@
     ]
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "jest": "^27.5.1",
     "util": "^0.12.5"
+=======
+    "@types/bootstrap": "^5.2.10"
+>>>>>>> d26f370bc75e88162c237cdc0a4ecc69c3f72cfd
   }
 }
